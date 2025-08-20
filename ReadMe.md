@@ -7,6 +7,8 @@ The aim will be to take a CSV in the form
 ```csv
 suggestedName,Link
 Jack Jones Portfolio,https://www.jackljones.com/
+Books,https://books.toscrape.com/
+"This is a test of getting, JSON",https://jsonplaceholder.typicode.com/todos/1
 ```
 
 and return the following information:
@@ -14,6 +16,8 @@ and return the following information:
 - Title
 - Status Code
 - How Long the Request took to make
+
+The program should automatically create a file to test against
 
 ## Todo
 

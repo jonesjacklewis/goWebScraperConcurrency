@@ -1,9 +1,12 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -22,6 +25,8 @@ type Result struct {
 	OriginalLinkInfo LinkInfo
 	Success          bool
 }
+
+const filename = "links.csv"
 
 func GetResult(linkInfo LinkInfo) (Result, error) {
 
@@ -122,25 +127,84 @@ func formatOutput(result Result) {
 	fmt.Printf("Request Duration: %d Milliseconds\n", result.RequestDuration.Milliseconds())
 	fmt.Printf("Original Suggested Name: %s\n", result.OriginalLinkInfo.SuggestedName)
 	fmt.Printf("Target URL: %s\n", result.OriginalLinkInfo.TargetUrl)
-	fmt.Printf("Title: %t\n", result.Success)
+	fmt.Printf("Success: %t\n", result.Success)
 
 	fmt.Println(" ========= ")
 }
 
-func main() {
-	testSuggestedName := "Jack Jones Portfolio"
-	testTargetUrl := "https://www.jackljones.com/"
+func ensureFileExists() error {
+	file, err := os.OpenFile(filename, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644)
 
-	linkInfo := LinkInfo{
-		SuggestedName: testSuggestedName,
-		TargetUrl:     testTargetUrl,
+	if err != nil {
+		if os.IsExist(err) {
+			return nil
+		}
+		return err
 	}
 
-	result, err := GetResult(linkInfo)
+	defer file.Close()
+
+	file.WriteString("suggestedName,Link\n")
+	file.WriteString("Jack Jones Portfolio,https://www.jackljones.com/\n")
+	file.WriteString("Books,https://books.toscrape.com/\n")
+	file.WriteString("\"This is a test of getting, JSON\",https://jsonplaceholder.typicode.com/todos/1")
+
+	return nil
+
+}
+
+func main() {
+
+	err := ensureFileExists()
 
 	if err != nil {
 		log.Fatalf("%v", err)
 	}
 
-	formatOutput(result)
+	file, err := os.Open(filename)
+
+	if err != nil {
+		log.Fatalf("%v", err)
+	}
+
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+
+	// skip first line
+
+	_, err = reader.Read()
+
+	if err != nil {
+		log.Fatalf("%v", err)
+	}
+
+	for {
+		record, err := reader.Read()
+
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			log.Default().Printf("Skipping due to %v\n", err)
+			continue
+		}
+
+		linkInfo := LinkInfo{
+			SuggestedName: strings.TrimSpace(record[0]),
+			TargetUrl:     strings.TrimSpace(record[1]),
+		}
+
+		result, err := GetResult(linkInfo)
+
+		if err != nil {
+			log.Default().Printf("Error when trying to get result %v\n", err)
+			continue
+		}
+
+		formatOutput(result)
+
+	}
+
 }
