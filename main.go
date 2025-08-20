@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -17,6 +18,22 @@ type Result struct {
 	OriginalLinkInfo LinkInfo
 }
 
+func GetResult(linkInfo LinkInfo) (Result, error) {
+	return Result{}, fmt.Errorf("error happened")
+}
+
 func main() {
-	fmt.Println("Hello World")
+	testSuggestedName := "Jack Jones Portfolio"
+	testTargetUrl := "https://www.jackljones.com/"
+
+	linkInfo := LinkInfo{
+		SuggestedName: testSuggestedName,
+		TargetUrl:     testTargetUrl,
+	}
+
+	_, err := GetResult(linkInfo)
+
+	if err != nil {
+		log.Fatalf("%v", err)
+	}
 }
