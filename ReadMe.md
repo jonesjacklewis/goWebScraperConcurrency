@@ -18,7 +18,7 @@ and return the following information:
 ## Todo
 
 - [x] Skeleton Project
-- [ ] Structs to model data
+- [x] Structs to model data
 - [ ] Using hard-coded values make HTTP request
 - [ ] Format/Print output
 - [ ] Read data from CSV file
