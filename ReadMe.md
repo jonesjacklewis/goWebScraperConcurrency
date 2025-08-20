@@ -19,7 +19,10 @@ and return the following information:
 
 - [x] Skeleton Project
 - [x] Structs to model data
-- [ ] Using hard-coded values make HTTP request
-- [ ] Format/Print output
+- [x] Using hard-coded values make HTTP request
+- [x] Format/Print output
+- [ ] Extract title
+  - [ ] `<title>` element
+  - [ ] the first `<h1>` element
 - [ ] Read data from CSV file
 - [ ] Make it work concurrently
