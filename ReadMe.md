@@ -28,5 +28,5 @@ The program should automatically create a file to test against
 - [x] Extract title
   - [x] `<title>` element
   - [x] the first `<h1>` element
-- [ ] Read data from CSV file
+- [x] Read data from CSV file
 - [ ] Make it work concurrently
