@@ -21,8 +21,8 @@ and return the following information:
 - [x] Structs to model data
 - [x] Using hard-coded values make HTTP request
 - [x] Format/Print output
-- [ ] Extract title
-  - [ ] `<title>` element
-  - [ ] the first `<h1>` element
+- [x] Extract title
+  - [x] `<title>` element
+  - [x] the first `<h1>` element
 - [ ] Read data from CSV file
 - [ ] Make it work concurrently

@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
 type LinkInfo struct {
@@ -69,16 +71,39 @@ func GetResult(linkInfo LinkInfo) (Result, error) {
 	contentType = strings.ToLower(contentType)
 
 	if !strings.Contains(contentType, "html") {
+		// this is still a valid outcome, just not HTML so can't extract further info
 		return Result{
 			Title:            linkInfo.SuggestedName,
 			StatusCode:       response.StatusCode,
 			RequestDuration:  timeTaken,
 			OriginalLinkInfo: linkInfo,
-			Success:          false,
+			Success:          true,
 		}, nil
 	}
 
-	title := linkInfo.SuggestedName
+	reader, err := goquery.NewDocumentFromReader(response.Body)
+
+	if err != nil {
+		// could still be valid so not passing error downstream, but should log
+		log.Default().Printf("%v", err)
+		return Result{
+			Title:            linkInfo.SuggestedName,
+			StatusCode:       response.StatusCode,
+			RequestDuration:  timeTaken,
+			OriginalLinkInfo: linkInfo,
+			Success:          true,
+		}, nil
+	}
+
+	title := strings.TrimSpace(reader.Find("title").First().Text())
+
+	if len(title) == 0 {
+		title = strings.TrimSpace(reader.Find("h1").First().Text())
+	}
+
+	if len(title) == 0 {
+		title = linkInfo.SuggestedName
+	}
 
 	return Result{
 		Title:            title,
@@ -98,8 +123,8 @@ func formatOutput(result Result) {
 	fmt.Printf("Original Suggested Name: %s\n", result.OriginalLinkInfo.SuggestedName)
 	fmt.Printf("Target URL: %s\n", result.OriginalLinkInfo.TargetUrl)
 	fmt.Printf("Title: %t\n", result.Success)
-	fmt.Println(" ========= ")
 
+	fmt.Println(" ========= ")
 }
 
 func main() {
