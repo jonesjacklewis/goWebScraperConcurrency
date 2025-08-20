@@ -27,6 +27,7 @@ type Result struct {
 }
 
 const filename = "links.csv"
+const numberOfWorkers = 5
 
 func GetResult(linkInfo LinkInfo) (Result, error) {
 
@@ -153,6 +154,28 @@ func ensureFileExists() error {
 
 }
 
+func worker(index int, jobs <-chan LinkInfo, results chan<- Result) {
+	for j := range jobs {
+		fmt.Printf("Worked %d is targetting job %s\n", index, j.TargetUrl)
+
+		output, err := GetResult(j)
+
+		if err != nil {
+			log.Default().Printf("Worked %d had an error %v getting %s", index, err, j.TargetUrl)
+
+			results <- Result{
+				Success:          false,
+				OriginalLinkInfo: j,
+			}
+
+			continue
+		}
+
+		results <- output
+
+	}
+}
+
 func main() {
 
 	err := ensureFileExists()
@@ -169,7 +192,15 @@ func main() {
 
 	defer file.Close()
 
+	jobs := make(chan LinkInfo, 100)
+	results := make(chan Result, 100)
+
+	for a := 1; a <= numberOfWorkers; a++ {
+		go worker(a, jobs, results)
+	}
+
 	reader := csv.NewReader(file)
+	urlCount := 0
 
 	// skip first line
 
@@ -196,15 +227,17 @@ func main() {
 			TargetUrl:     strings.TrimSpace(record[1]),
 		}
 
-		result, err := GetResult(linkInfo)
+		urlCount++
 
-		if err != nil {
-			log.Default().Printf("Error when trying to get result %v\n", err)
-			continue
-		}
+		jobs <- linkInfo
 
-		formatOutput(result)
+	}
 
+	close(jobs)
+
+	for i := 1; i <= urlCount; i++ {
+		output := <-results
+		formatOutput(output)
 	}
 
 }

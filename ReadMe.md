@@ -29,4 +29,4 @@ The program should automatically create a file to test against
   - [x] `<title>` element
   - [x] the first `<h1>` element
 - [x] Read data from CSV file
-- [ ] Make it work concurrently
+- [x] Make it work concurrently
